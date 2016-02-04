@@ -62,6 +62,7 @@ class CrudViewCommand extends Command
         'datetime' => 'datetime-local',
         'time' => 'time',
         'boolean' => 'radio',
+	    'fileinput' => 'fileinput',
     ];
 
     /**
@@ -118,9 +119,19 @@ class CrudViewCommand extends Command
         }
 
         $formFieldsHtml = '';
+	    $formFieldsEditHtml = '';
+	    $formAsFile     = false;
         foreach ($formFields as $item) {
-            $formFieldsHtml .= $this->createField($item);
+
+	        $formFieldsHtml .= $this->createField($item);
+	        if ( $item['type'] == 'fileinput' ){
+		        $formAsFile = true;
+				$formFieldsEditHtml .= $this->createFilePreview($item);
+	        }else{
+		        $formFieldsEditHtml .= $this->createField($item);
+	        }
         }
+	    dump($formFieldsHtml,$formFieldsEditHtml);
 
         // Form fields and label
         $formHeadingHtml = '';
@@ -171,6 +182,8 @@ class CrudViewCommand extends Command
             File::put($newCreateFile, str_replace('%%modelName%%', $modelName, File::get($newCreateFile)));
             File::put($newCreateFile, str_replace('%%routeGroup%%', $routeGroup, File::get($newCreateFile)));
             File::put($newCreateFile, str_replace('%%formFieldsHtml%%', $formFieldsHtml, File::get($newCreateFile)));
+	        File::put($newCreateFile, str_replace('%%formHasFile%%',  ( $formAsFile ? 'true' : 'false' ), File::get($newCreateFile)));
+
         }
 
         // For edit.blade.php file
@@ -183,7 +196,8 @@ class CrudViewCommand extends Command
             File::put($newEditFile, str_replace('%%crudNameSingular%%', $crudNameSingular, File::get($newEditFile)));
             File::put($newEditFile, str_replace('%%modelName%%', $modelName, File::get($newEditFile)));
             File::put($newEditFile, str_replace('%%routeGroup%%', $routeGroup, File::get($newEditFile)));
-            File::put($newEditFile, str_replace('%%formFieldsHtml%%', $formFieldsHtml, File::get($newEditFile)));
+            File::put($newEditFile, str_replace('%%formFieldsHtml%%', $formFieldsEditHtml, File::get($newEditFile)));
+	        File::put($newEditFile, str_replace('%%formHasFile%%',  ( $formAsFile ? 'true' : 'false' ), File::get($newEditFile)));
         }
 
         // For show.blade.php file
@@ -260,6 +274,9 @@ EOD;
             case 'radio':
                 return $this->createRadioField($item);
                 break;
+	        case 'fileinput':
+		        return $this->createFileInputField($item);
+		        break;
             default: // text
                 return $this->createFormField($item);
         }
@@ -337,5 +354,41 @@ EOD;
 
         return $this->wrapField($item, sprintf($field, $item['name']));
     }
+
+	/**
+	 * Create a fileinput using the form helper.
+	 *
+	 * @param  string  $item
+	 *
+	 * @return string
+	 */
+	protected function createFileInputField($item)
+	{
+		return $this->wrapField(
+			$item,
+			"{!! Form::file('" . $item['name'] . "') !!}"
+		);
+	}
+
+	/**
+	 * Create a file preview.
+	 *
+	 * @param  string  $item
+	 *
+	 * @return string
+	 */
+	protected function createFilePreview($item)
+	{
+		$field =
+			<<<EOD
+            <div class="form-group">
+				<img src="{{ asset(%s) }}" height="150" />
+			</div>
+EOD;
+		return $this->wrapField($item, sprintf($field, $item['name']));
+	}
+
+
+
 
 }
