@@ -79,7 +79,7 @@ class CrudControllerCommand extends GeneratorCommand
             $validationRules = "\$this->validate(\$request, " . $this->option('required-fields') . ");\n";
         }
 
-        return $this->replaceNamespace($stub, $name)
+	    return $this->replaceNamespace($stub, $name)
             ->replaceViewPath($stub, $viewPath)
             ->replaceCrudName($stub, $crudName)
             ->replaceCrudNameSingular($stub, $crudNameSingular)

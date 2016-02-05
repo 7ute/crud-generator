@@ -131,7 +131,6 @@ class CrudViewCommand extends Command
 		        $formFieldsEditHtml .= $this->createField($item);
 	        }
         }
-	    dump($formFieldsHtml,$formFieldsEditHtml);
 
         // Form fields and label
         $formHeadingHtml = '';
@@ -206,6 +205,8 @@ class CrudViewCommand extends Command
         if (!File::copy($showFile, $newShowFile)) {
             echo "failed to copy $showFile...\n";
         } else {
+	        File::put($newShowFile, str_replace('%%crudName%%', $crudName, File::get($newShowFile)));
+	        File::put($newShowFile, str_replace('%%routeGroup%%', $routeGroup, File::get($newShowFile)));
             File::put($newShowFile, str_replace('%%formHeadingHtml%%', $formHeadingHtml, File::get($newShowFile)));
             File::put($newShowFile, str_replace('%%formBodyHtml%%', $formBodyHtmlForShowView, File::get($newShowFile)));
             File::put($newShowFile, str_replace('%%crudNameSingular%%', $crudNameSingular, File::get($newShowFile)));
